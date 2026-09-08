@@ -22,24 +22,29 @@ jobs:
           cd "$(dirname "$PROJ_FILE")"
           PROJ_NAME="$(basename "$PROJ_FILE")"
 
-          # 2. 交叉编译并显式链接系统 libsqlite3
-          BUILD_CMD=(
-            -scheme OKVideoMac
-            -configuration Release
-            -arch x86_64
-            ARCHS=x86_64
-            ONLY_ACTIVE_ARCH=NO
-            CODE_SIGNING_ALLOWED=NO
-            CODE_SIGNING_REQUIRED=NO
-            CODE_SIGN_IDENTITY=""
-            OTHER_LDFLAGS='$(inherited) -lsqlite3'
-            build
-          )
+          # 2. 创建 xcconfig 配置文件：安全继承项目全部既有配置，并追加 -lsqlite3
+          cat << 'EOF' > IntelConfig.xcconfig
+          ARCHS = x86_64
+          ONLY_ACTIVE_ARCH = NO
+          CODE_SIGNING_ALLOWED = NO
+          CODE_SIGNING_REQUIRED = NO
+          CODE_SIGN_IDENTITY = 
+          OTHER_LDFLAGS = $(inherited) -lsqlite3
+          EOF
 
+          # 3. 使用 xcconfig 进行 Intel (x86_64) 构建
           if [[ "$PROJ_NAME" == *.xcworkspace ]]; then
-            xcodebuild -workspace "$PROJ_NAME" "${BUILD_CMD[@]}"
+            xcodebuild -workspace "$PROJ_NAME" \
+                       -scheme OKVideoMac \
+                       -configuration Release \
+                       -xcconfig IntelConfig.xcconfig \
+                       build
           else
-            xcodebuild -project "$PROJ_NAME" "${BUILD_CMD[@]}"
+            xcodebuild -project "$PROJ_NAME" \
+                       -scheme OKVideoMac \
+                       -configuration Release \
+                       -xcconfig IntelConfig.xcconfig \
+                       build
           fi
 
       - name: Package App
