@@ -22,24 +22,28 @@ jobs:
           cd "$(dirname "$PROJ_FILE")"
           PROJ_NAME="$(basename "$PROJ_FILE")"
 
-          # 2. 交叉编译生成 Intel (x86_64) 架构
+          # 2. 交叉编译生成 Intel (x86_64) 架构（已移除冲突的 -destination 参数）
           if [[ "$PROJ_NAME" == *.xcworkspace ]]; then
             xcodebuild -workspace "$PROJ_NAME" \
                        -scheme OKVideoMac \
                        -configuration Release \
-                       -destination "generic/platform=macOS" \
                        -arch x86_64 \
+                       ARCHS=x86_64 \
                        ONLY_ACTIVE_ARCH=NO \
                        CODE_SIGNING_ALLOWED=NO \
+                       CODE_SIGNING_REQUIRED=NO \
+                       CODE_SIGN_IDENTITY="" \
                        build
           else
             xcodebuild -project "$PROJ_NAME" \
                        -scheme OKVideoMac \
                        -configuration Release \
-                       -destination "generic/platform=macOS" \
                        -arch x86_64 \
+                       ARCHS=x86_64 \
                        ONLY_ACTIVE_ARCH=NO \
                        CODE_SIGNING_ALLOWED=NO \
+                       CODE_SIGNING_REQUIRED=NO \
+                       CODE_SIGN_IDENTITY="" \
                        build
           fi
 
